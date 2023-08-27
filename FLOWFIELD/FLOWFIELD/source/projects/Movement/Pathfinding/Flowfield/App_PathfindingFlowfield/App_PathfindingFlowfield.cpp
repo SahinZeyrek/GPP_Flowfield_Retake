@@ -14,6 +14,11 @@ App_PathfindingFlowfield::~App_PathfindingFlowfield()
 	SAFE_DELETE(m_pGridGraph);
 	SAFE_DELETE(m_pGraphRenderer);
 	SAFE_DELETE(m_pGraphEditor);
+	for (int i{}; i < m_pAgents.size(); ++i)
+	{
+		SAFE_DELETE(m_pAgents[i]);
+	}
+	m_pAgents.clear();
 }
 
 //Functions
@@ -32,12 +37,33 @@ void App_PathfindingFlowfield::Start()
 	startPathIdx = 44;
 	endPathIdx = 88;
 	CalculatePath();
+	size_t amountAgents(150);
+	float offset{ 5.f };
+	m_pAgents.reserve(amountAgents);
+	for (size_t i = 0; i < amountAgents; ++i)
+	{
+		SteeringAgent* sa = new SteeringAgent();
+		sa->SetAutoOrient(true);
+		sa->SetMaxLinearSpeed(100.f);
+		sa->SetMass(1.f);
+		float x = randomFloat(offset, (static_cast<float>(COLUMNS) * static_cast<float>(m_SizeCell)) - offset);
+		float y = randomFloat(offset, (static_cast<float>(ROWS) * static_cast<float>(m_SizeCell)) - offset);
+		sa->SetPosition({x,y});
+		m_pAgents.push_back(sa);
+	}
+
 }
 
 void App_PathfindingFlowfield::Update(float deltaTime)
 {
 	UNREFERENCED_PARAMETER(deltaTime);
-
+	Vector2 topLeft = { static_cast<float>(COLUMNS) * static_cast<float>(m_SizeCell),static_cast<float>(ROWS) * static_cast<float>(m_SizeCell) };
+	for (size_t i = 0; i < m_pAgents.size(); ++i)
+	{
+		m_pAgents[i]->Update(deltaTime);
+		m_pAgents[i]->TrimToWorld({ 0,0 }, topLeft, true);
+	}
+	CalculatePath();
 	//INPUT
 	bool const middleMousePressed = INPUTMANAGER->IsMouseButtonUp(InputMouseButton::eMiddle);
 	if (middleMousePressed)
@@ -47,16 +73,9 @@ void App_PathfindingFlowfield::Update(float deltaTime)
 
 		//Find closest node to click pos
 		int closestNode = m_pGridGraph->GetNodeIdxAtWorldPos(mousePos);
-		if (m_StartSelected)
-		{
-			startPathIdx = closestNode;
-			CalculatePath();
-		}
-		else
-		{
+		
 			endPathIdx = closestNode;
 			CalculatePath();
-		}
 	}
 	//IMGUI
 	UpdateImGui();
@@ -208,8 +227,7 @@ void App_PathfindingFlowfield::CalculatePath()
 		auto startNode = m_pGridGraph->GetNode(startPathIdx);
 		auto endNode = m_pGridGraph->GetNode(endPathIdx);
 
-
-		std::cout << "New Path Calculated" << std::endl;
+		flowfield.CalculateFlowfield(endNode, m_pAgents);
 	}
 	else
 	{

@@ -90,6 +90,10 @@ namespace Elite
 					currentRecord.costSoFar = 255;
 					continue;
 				}
+				if (neighbour->GetTerrainType() == TerrainType::Mud)
+				{// set cost to 255 and go to next node
+					currentRecord.pNode->SetDistance(currentRecord.pNode->GetDistance() + 5);
+				}
 				// then we check if we already have visited the neighbour
 				// (check if its in closed list)
 				auto visitedNeighbour = std::find_if(closedList.begin(), closedList.end(),
@@ -113,7 +117,12 @@ namespace Elite
 				else
 				{
 					// do the same logic but with the open list
-					auto openNeighbour = std::find_if(openList.begin(), openList.end(), neighbour);
+					auto openNeighbour = std::find_if(openList.begin(), openList.end(),
+						[neighbour](const NodeRecord& nodeRecord)
+						{
+							return nodeRecord.pNode == neighbour;
+						}
+					);
 					// if we found it in the openlist
 					if (openNeighbour != openList.end())
 					{
@@ -149,6 +158,7 @@ namespace Elite
 		for (auto& node : closedList)
 		{
 			Vector2 fieldVector{};
+			int closestDistance{ INT16_MAX };
 			// not surrounded by impassable terrain or is on the edge of the grid
 			bool IsPureCell{};
 			int amountOfNeighbours{ 4 };
@@ -165,7 +175,7 @@ namespace Elite
 			if (!IsPureCell)
 			{
 				// make a vector from the node to all its neighbours and get the smallest one 
-				std::vector<Vector2> vectorToNeighbours;
+			
 				for (auto& neighbour : m_pGraph->GetNodeConnections(node.pNode))
 				{
 					// calculate a vector from neighbour to node
@@ -173,12 +183,12 @@ namespace Elite
 						(m_pGraph->GetNodeWorldPos(m_pGraph->GetNode(neighbour->GetTo()))
 							-
 							m_pGraph->GetNodeWorldPos(node.pNode));
-					// add it to the container
-					vectorToNeighbours.push_back(NeighbourToNode);
+					if (m_pGraph->GetNode(neighbour->GetTo())->GetDistance() < closestDistance)
+					{
+						closestDistance = m_pGraph->GetNode(neighbour->GetTo())->GetDistance();
+						fieldVector = NeighbourToNode.GetNormalized();
+					}
 				}
-				// grab the smallest distance because not a pure cell
-				auto smallest = *std::min_element(vectorToNeighbours.begin(), vectorToNeighbours.end());
-				fieldVector = smallest.GetNormalized();
 			}
 			else
 			{ // if it is a pure cell

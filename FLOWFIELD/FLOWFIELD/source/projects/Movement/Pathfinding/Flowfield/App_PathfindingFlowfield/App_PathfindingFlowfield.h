@@ -8,6 +8,7 @@
 #include "framework\EliteAI\EliteGraphs\EliteGraphUtilities\EGraphEditor.h"
 #include "framework\EliteAI\EliteGraphs\EliteGraphUtilities\EGraphRenderer.h"
 #include "framework\EliteAI\EliteNavigation\ENavigation.h"
+#include "projects/Movement/SteeringBehaviors/SteeringAgent.h"
 
 
 //-----------------------------------------------------------------
@@ -38,11 +39,13 @@ private:
 	const bool ALLOW_DIAGONAL_MOVEMENT = true;
 	Elite::Vector2 m_StartPosition = Elite::ZeroVector2;
 	Elite::Vector2 m_TargetPosition = Elite::ZeroVector2;
+	//Agents
+	std::vector<SteeringAgent*> m_pAgents;
 
 	//Grid datamembers
-	static const int COLUMNS = 20;
-	static const int ROWS = 10;
-	unsigned int m_SizeCell = 15;
+	static const int COLUMNS = 25;
+	static const int ROWS = 20;
+	unsigned int m_SizeCell = 25;
 	Elite::GridGraph<Elite::GridTerrainNode, Elite::GraphConnection>* m_pGridGraph;
 
 	//Pathfinding datamembers
