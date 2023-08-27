@@ -32,7 +32,7 @@ namespace Elite
 			};
 		};
 
-		void Flowfield<T_NodeType, T_ConnectionType>::CalculateFlowfield(T_NodeType* pEndNode, std::vector<SteeringAgent>& pAgents);
+		void Flowfield<T_NodeType, T_ConnectionType>::CalculateFlowfield(T_NodeType* pEndNode, std::vector<SteeringAgent*>& pAgents);
 	private:
 		float GetHeuristicCost(T_NodeType* pStartNode, T_NodeType* pEndNode) const;
 
@@ -49,7 +49,7 @@ namespace Elite
 	}
 
 	template<class T_NodeType, class T_ConnectionType>
-	void Flowfield<T_NodeType, T_ConnectionType>::CalculateFlowfield(T_NodeType* pEndNode, std::vector<SteeringAgent>& pAgents)
+	void Flowfield<T_NodeType, T_ConnectionType>::CalculateFlowfield(T_NodeType* pEndNode, std::vector<SteeringAgent*>& pAgents)
 	{
 		//https://www.youtube.com/watch?v=ZJZu3zLMYAc
 #pragma region Costfield/HeatMap
@@ -69,8 +69,8 @@ namespace Elite
 		{
 			// Grab node with least cost and set to current
 			// dereference it to get value
-			currentRecord = *std::min_element(openList.begin(), openList.end(), 
-				[](const NodeRecord& node1, const NodeRecord node2) 
+			currentRecord = *std::min_element(openList.begin(), openList.end(),
+				[](const NodeRecord& node1, const NodeRecord node2)
 				{
 					return node1.costSoFar < node2.costSoFar;
 				});
@@ -202,7 +202,24 @@ namespace Elite
 			node.pNode->SetDirection(fieldVector);
 		}
 #pragma endregion Vector Kernel Convolution
-
+#pragma region ApplyVectors
+		for (auto& agent : pAgents)
+		{
+			auto node = m_pGraph->GetNodeAtWorldPos(agent->GetPosition());
+			//if valid node
+			if (node)
+			{
+				if (node != pEndNode)
+				{
+					agent->SetLinearVelocity(node->GetDirection() * agent->GetMaxLinearSpeed());
+				}
+				else
+				{
+					agent->SetLinearVelocity({ 0.f, 0.f });
+				}
+			}
+		}
+#pragma endregion ApplyVectors
 	}
 
 	template <class T_NodeType, class T_ConnectionType>
