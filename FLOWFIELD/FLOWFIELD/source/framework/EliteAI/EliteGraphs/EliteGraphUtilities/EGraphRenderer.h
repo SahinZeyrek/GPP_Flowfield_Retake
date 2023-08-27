@@ -19,7 +19,7 @@ namespace Elite
 		void RenderGraph(IGraph<T_NodeType, T_ConnectionType>* pGraph, bool renderNodes, bool renderConnections, bool renderNodeTxt = true, bool renderConnectionTxt = true) const;
 
 		template<class T_NodeType, class T_ConnectionType>
-		void RenderGraph(GridGraph<T_NodeType, T_ConnectionType>* pGraph, bool renderNodes, bool renderNodeTxt, bool renderConnections, bool renderConnectionsCosts) const;
+		void RenderGraph(GridGraph<T_NodeType, T_ConnectionType>* pGraph, bool renderNodes, bool renderNodeCosts, bool renderVectors) const;
 
 		template<class T_NodeType, class T_ConnectionType>
 		void HighlightNodes(GridGraph<T_NodeType, T_ConnectionType>* pGraph, std::vector<T_NodeType*> path, Color col = HIGHLIGHTED_NODE_COLOR) const;
@@ -73,9 +73,9 @@ namespace Elite
 				if (renderNodeTxt)
 					nodeTxt = GetNodeText(node);
 
-				RenderCircleNode(pGraph->GetNodeWorldPos(node),	nodeTxt, DEFAULT_NODE_RADIUS, GetNodeColor(node));
+				RenderCircleNode(pGraph->GetNodeWorldPos(node), nodeTxt, DEFAULT_NODE_RADIUS, GetNodeColor(node));
 			}
-		
+
 			if (renderConnections)
 			{
 				//Connections
@@ -95,43 +95,41 @@ namespace Elite
 	void GraphRenderer::RenderGraph(
 		GridGraph<T_NodeType, T_ConnectionType>* pGraph, 
 		bool renderNodes, 
-		bool renderNodeNumbers,
-		bool renderConnections, 
-		bool renderConnectionsCosts) const
+		bool renderNodeCosts,
+		bool renderVectors) const
 	{
 		if (renderNodes)
 		{
 			//Nodes/Grid
-			for (auto r = 0; r < pGraph->m_NrOfRows; ++r)
+			for (auto rows = 0; rows < pGraph->m_NrOfRows; ++rows)
 			{
-				for (auto c = 0; c < pGraph->m_NrOfColumns; ++c)
+				for (auto cols = 0; cols < pGraph->m_NrOfColumns; ++cols)
 				{
-					int idx = r * pGraph->m_NrOfColumns + c;
+					int idx = rows * pGraph->m_NrOfColumns + cols;
 					Vector2 cellPos{ pGraph->GetNodeWorldPos(idx) };
 					int cellSize = pGraph->m_CellSize;
-
+					std::string cost{};
+					auto node = pGraph->GetNode(idx);
 					//Node
-					std::string nodeTxt{};
-					if (renderNodeNumbers)
-						nodeTxt = GetNodeText(pGraph->GetNode(idx));
+					if (renderNodeCosts && node->GetTerrainType() != TerrainType::Water)
+					{
+						cost = GetNodeText(node);
+					}
+					RenderRectNode(cellPos, cost, float(cellSize), GetNodeColor(pGraph->GetNode(idx)), 0.1f);
 
-					RenderRectNode(cellPos, nodeTxt, float(cellSize), GetNodeColor(pGraph->GetNode(idx)), 0.1f);
 				}
 			}
+
 		}
 
-		if (renderConnections)
+		if (renderVectors)
 		{
 			for (auto node : pGraph->GetAllNodes())
 			{
-				//Connections
-				for (auto con : pGraph->GetNodeConnections(node->GetIndex()))
+				if (node->GetTerrainType() != TerrainType::Water)
 				{
-					std::string conTxt{ };
-					if (renderConnectionsCosts)
-						conTxt = GetConnectionText(con);
-
-					RenderConnection(con, pGraph->GetNodeWorldPos(con->GetTo()), pGraph->GetNodeWorldPos(con->GetFrom()), conTxt, GetConnectionColor(con));
+					DEBUGRENDERER2D->DrawDirection(pGraph->GetNodeWorldPos(node), node->GetDirection(), 2.f, { 1.f,192.f / 255.f,203 / 255.f }, DEBUGRENDERER2D->NextDepthSlice());
+					DEBUGRENDERER2D->DrawPoint(pGraph->GetNodeWorldPos(node) + node->GetDirection() *2.f, 3.f, {175.f / 255.f, 238.f / 255.f, 238.f / 255.f}, 0);
 				}
 			}
 		}
@@ -184,7 +182,7 @@ namespace Elite
 	inline std::string GraphRenderer::GetNodeText(T_NodeType* pNode) const
 	{
 		std::stringstream ss;
-		ss << std::fixed << std::setprecision(m_FloatPrintPrecision) << pNode->GetIndex();
+		ss << std::fixed << std::setprecision(m_FloatPrintPrecision) << pNode->GetDistance();
 		return ss.str();
 	}
 

@@ -91,7 +91,7 @@ void App_PathfindingFlowfield::Render(float deltaTime) const
 {
 	UNREFERENCED_PARAMETER(deltaTime);
 	//Render grid
-	m_pGraphRenderer->RenderGraph(m_pGridGraph, m_DebugSettings.DrawNodes, m_DebugSettings.DrawNodeNumbers, m_DebugSettings.DrawConnections, m_DebugSettings.DrawConnectionCosts);
+	m_pGraphRenderer->RenderGraph(m_pGridGraph, m_DebugSettings.DrawNodes, m_DebugSettings.DrawNodeCosts, m_DebugSettings.DrawVectors);
 
 	//Render start node on top if applicable
 	//if (startPathIdx != invalid_node_index)
@@ -141,15 +141,8 @@ void App_PathfindingFlowfield::UpdateImGui()
 		bool windowActive = true;
 		ImGui::SetNextWindowPos(ImVec2((float)width - menuWidth - 10, 10));
 		ImGui::SetNextWindowSize(ImVec2((float)menuWidth, (float)height - 20));
-		ImGui::Begin("Gameplay Programming", &windowActive, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
+		ImGui::Begin("Flowfield - Sahin Zeyrek", &windowActive, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
 		ImGui::PushAllowKeyboardFocus(false);
-
-		//Elements
-		ImGui::Text("CONTROLS");
-		ImGui::Indent();
-		ImGui::Text("LMB: target");
-		ImGui::Text("RMB: start");
-		ImGui::Unindent();
 
 		/*Spacing*/ImGui::Spacing(); ImGui::Separator(); ImGui::Spacing(); ImGui::Spacing();
 
@@ -161,50 +154,21 @@ void App_PathfindingFlowfield::UpdateImGui()
 
 		/*Spacing*/ImGui::Spacing(); ImGui::Separator(); ImGui::Spacing(); ImGui::Spacing();
 
-		ImGui::Text("A* Pathfinding");
+		ImGui::Text("Flowfield Pathfinding");
 		ImGui::Spacing();
 
 		ImGui::Text("Middle Mouse");
-		ImGui::Text("controls");
-		std::string buttonText{ "" };
-		if (m_StartSelected)
-			buttonText += "Start Node";
-		else
-			buttonText += "End Node";
+		ImGui::Text("to set the goal node");
+		ImGui::Spacing();
 
-		if (ImGui::Button(buttonText.c_str()))
-		{
-			m_StartSelected = !m_StartSelected;
-		}
+		ImGui::Text("Left click");
+		ImGui::Text("to change node to mud");
+		ImGui::Spacing();
+
 
 		ImGui::Checkbox("Grid", &m_DebugSettings.DrawNodes);
-		ImGui::Checkbox("NodeNumbers", &m_DebugSettings.DrawNodeNumbers);
-		ImGui::Checkbox("Connections", &m_DebugSettings.DrawConnections);
-		ImGui::Checkbox("Connections Costs", &m_DebugSettings.DrawConnectionCosts);
-		if (ImGui::Combo("", &m_SelectedHeuristic, "Manhattan\0Euclidean\0SqrtEuclidean\0Octile\0Chebyshev", 4))
-		{
-			switch (m_SelectedHeuristic)
-			{
-			case 0:
-				m_pHeuristicFunction = HeuristicFunctions::Manhattan;
-				break;
-			case 1:
-				m_pHeuristicFunction = HeuristicFunctions::Euclidean;
-				break;
-			case 2:
-				m_pHeuristicFunction = HeuristicFunctions::SqrtEuclidean;
-				break;
-			case 3:
-				m_pHeuristicFunction = HeuristicFunctions::Octile;
-				break;
-			case 4:
-				m_pHeuristicFunction = HeuristicFunctions::Chebyshev;
-				break;
-			default:
-				m_pHeuristicFunction = HeuristicFunctions::Chebyshev;
-				break;
-			}
-		}
+		ImGui::Checkbox("Node Costs", &m_DebugSettings.DrawNodeCosts);
+		ImGui::Checkbox("Draw Vector", &m_DebugSettings.DrawVectors);
 		ImGui::Spacing();
 
 		//End

@@ -30,9 +30,8 @@ private:
 	struct DebugSettings
 	{
 		bool DrawNodes{ true };
-		bool DrawNodeNumbers{ false };
-		bool DrawConnections{ false };
-		bool DrawConnectionCosts{ false };
+		bool DrawVectors{ false };
+		bool DrawNodeCosts{ false };
 	};
 
 	//Datamembers
@@ -43,9 +42,9 @@ private:
 	std::vector<SteeringAgent*> m_pAgents;
 
 	//Grid datamembers
-	static const int COLUMNS = 25;
-	static const int ROWS = 20;
-	unsigned int m_SizeCell = 25;
+	static const int COLUMNS = 15;
+	static const int ROWS = 10;
+	unsigned int m_SizeCell = 12;
 	Elite::GridGraph<Elite::GridTerrainNode, Elite::GraphConnection>* m_pGridGraph;
 
 	//Pathfinding datamembers
