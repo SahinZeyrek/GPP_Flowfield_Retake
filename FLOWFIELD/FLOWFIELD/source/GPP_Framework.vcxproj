@@ -216,6 +216,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="framework\EliteAI\EliteGraphs\EliteGraphAlgorithms\EFlowfield.h" />
     <ClInclude Include="framework\EliteAI\EliteGraphs\EGraph2D.h" />
     <ClInclude Include="framework\EliteAI\EliteGraphs\EGraphConnectionTypes.h" />
     <ClInclude Include="framework\EliteAI\EliteGraphs\EGraphEnums.h" />

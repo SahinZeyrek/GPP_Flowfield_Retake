@@ -75,10 +75,10 @@ void App_PathfindingFlowfield::Render(float deltaTime) const
 	m_pGraphRenderer->RenderGraph(m_pGridGraph, m_DebugSettings.DrawNodes, m_DebugSettings.DrawNodeNumbers, m_DebugSettings.DrawConnections, m_DebugSettings.DrawConnectionCosts);
 
 	//Render start node on top if applicable
-	if (startPathIdx != invalid_node_index)
-	{
-		m_pGraphRenderer->HighlightNodes(m_pGridGraph, { m_pGridGraph->GetNode(startPathIdx) }, START_NODE_COLOR);
-	}
+	//if (startPathIdx != invalid_node_index)
+	//{
+	//	m_pGraphRenderer->HighlightNodes(m_pGridGraph, { m_pGridGraph->GetNode(startPathIdx) }, START_NODE_COLOR);
+	//}
 
 	//Render end node on top if applicable
 	if (endPathIdx != invalid_node_index)
