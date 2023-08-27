@@ -77,10 +77,17 @@ namespace Elite
 				break;
 			}
 		}
-		
+		// Each cell needs a distance to the goal
+		void SetDistance(int distance) { m_Distance = distance; }
+		int GetDistance()const { return m_Distance; }
+		// Each cell also has a vector pointing towards the goal
+		void SetDirection(Vector2 direction) { m_Direction = direction; }
+		Vector2 GetDirection()const { return m_Direction; }
 
 	protected:
 		TerrainType m_Terrain;
+		int m_Distance;
+		Vector2 m_Direction;
 	};
 
 

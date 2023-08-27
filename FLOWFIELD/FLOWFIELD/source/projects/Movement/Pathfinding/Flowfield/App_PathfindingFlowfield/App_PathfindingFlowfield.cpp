@@ -4,7 +4,7 @@
 //Includes
 #include "App_PathfindingFlowfield.h"
 #include "framework\EliteAI\EliteGraphs\EliteGraphAlgorithms\EAstar.h"
-#include "framework\EliteAI\EliteGraphs\EliteGraphAlgorithms\EBFS.h"
+#include "framework\EliteAI\EliteGraphs\EliteGraphAlgorithms\EFlowfield.h"
 
 using namespace Elite;
 
@@ -204,11 +204,9 @@ void App_PathfindingFlowfield::CalculatePath()
 		&& startPathIdx != endPathIdx)
 	{
 		//BFS Pathfinding
-		auto pathfinder = BFS<GridTerrainNode, GraphConnection>(m_pGridGraph);
+		auto flowfield = Flowfield<GridTerrainNode, GraphConnection>(m_pGridGraph, m_pHeuristicFunction);
 		auto startNode = m_pGridGraph->GetNode(startPathIdx);
 		auto endNode = m_pGridGraph->GetNode(endPathIdx);
-
-		m_vPath = pathfinder.FindPath(startNode, endNode);
 
 
 		std::cout << "New Path Calculated" << std::endl;

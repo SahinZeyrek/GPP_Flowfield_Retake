@@ -32,12 +32,13 @@ namespace Elite
 			};
 		};
 
-
+		void Flowfield<T_NodeType, T_ConnectionType>::CalculateFlowfield(T_NodeType* pEndNode, std::vector<SteeringAgent>& pAgents);
 	private:
 		float GetHeuristicCost(T_NodeType* pStartNode, T_NodeType* pEndNode) const;
 
 		IGraph<T_NodeType, T_ConnectionType>* m_pGraph;
 		Heuristic m_HeuristicFunction;
+
 	};
 
 	template <class T_NodeType, class T_ConnectionType>
@@ -45,6 +46,105 @@ namespace Elite
 		: m_pGraph(pGraph)
 		, m_HeuristicFunction(hFunction)
 	{
+	}
+
+	template<class T_NodeType, class T_ConnectionType>
+	void Flowfield<T_NodeType, T_ConnectionType>::CalculateFlowfield(T_NodeType* pEndNode, std::vector<SteeringAgent>& pAgents)
+	{
+		//https://www.youtube.com/watch?v=ZJZu3zLMYAc
+#pragma region Costfield/HeatMap
+		std::vector<NodeRecord> openList, closedList;
+
+		NodeRecord beginRecord{};
+		beginRecord.pNode = pEndNode;
+		// goal has a cost of 0
+		beginRecord.costSoFar = 0;
+		beginRecord.pConnection = nullptr;
+
+		// First node in the list, will iterate over the whole grid, starting with this 
+		openList.push_back(beginRecord);
+		NodeRecord currentRecord;
+
+		while (!openList.empty())
+		{
+			// Grab node with least cost and set to current
+			// dereference it to get value
+			currentRecord = *std::min_element(openList.begin(), openList.end(), 
+				[](const NodeRecord& node1, const NodeRecord node2) 
+				{
+					return node1.costSoFar < node2.costSoFar;
+				});
+			// move current to the closed list 
+			closedList.push_back(currentRecord);
+			// remove it from the openlist because we already have calculated the smallest cost
+			openList.erase(std::remove(openList.begin(), openList.end(), currentRecord));
+
+			//loop over all the neighbours of the current node
+			for (auto& connection : m_pGraph->GetNodeConnections(currentRecord.pNode))
+			{
+
+				auto neighbour = m_pGraph->GetNode(connection->GetTo());
+				// check if the neighbour is an impassable node, skip it if so
+				if (neighbour->GetTerrainType() == TerrainType::Water)
+				{// set cost to 255 and go to next node
+					currentRecord.costSoFar = 255;
+					continue;
+				}
+				// then we check if we already have visited the neighbour
+				// (check if its in closed list)
+				auto visitedNeighbour = std::find_if(closedList.begin(), closedList.end(),
+					[neighbour](const NodeRecord& nodeRecord)
+					{
+						return nodeRecord.pNode == neighbour;
+					});
+				// if we have visited it
+				if (visitedNeighbour != closedList.end())
+				{
+					// check if the current node + the distance between cell is smaller
+					// than the visited neighbour
+					// 1 == distance between cells
+					// means a shorter path has been found for a cell we had already visited
+					if (currentRecord.costSoFar + 1 < visitedNeighbour->costSoFar)
+					{
+						visitedNeighbour->costSoFar = currentRecord.costSoFar + 1;
+						visitedNeighbour->pConnection = connection;
+					}
+				}
+				else
+				{
+					// do the same logic but with the open list
+					auto openNeighbour = std::find_if(openList.begin(), openList.end(), neighbour);
+					// if we found it in the openlist
+					if (openNeighbour != openList.end())
+					{
+						// check if the current node + the distance between cell is smaller
+						// than the visited neighbour
+						// 1 == distance between cells
+						// means a shorter path has been found for a cell we had already visited
+						if (currentRecord.costSoFar + 1 < openNeighbour->costSoFar)
+						{
+							openNeighbour->costSoFar = currentRecord.costSoFar + 1;
+							openNeighbour->pConnection = currentRecord.pConnection;
+						}
+					} // if it is not in the open list, create a new record for the neighbour 
+					else
+					{
+						NodeRecord newRecord;
+						newRecord.pNode = neighbour;
+						newRecord.pConnection = connection;
+						// cell is 1 away from the current node
+						newRecord.costSoFar = currentRecord.costSoFar + 1;
+						// push it in the open list 
+						openList.push_back(newRecord);
+					}
+				}
+
+			}
+			currentRecord.pNode->SetDistance(static_cast<int>(currentRecord.costSoFar));
+		}
+#pragma endregion Costfield/Heatmap
+
+
 	}
 
 	template <class T_NodeType, class T_ConnectionType>
