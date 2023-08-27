@@ -144,6 +144,64 @@ namespace Elite
 		}
 #pragma endregion Costfield/Heatmap
 
+#pragma region Vector Kernel Convolution
+		// iterate over all nodes in the closed list
+		for (auto& node : closedList)
+		{
+			Vector2 fieldVector{};
+			// not surrounded by impassable terrain or is on the edge of the grid
+			bool IsPureCell{};
+			int amountOfNeighbours{ 4 };
+			// check for a pure cell
+			for (const auto& neighbour : m_pGraph->GetNodeConnections(node.pNode))
+			{
+				if (m_pGraph->GetNode(neighbour->GetTo())->GetTerrainType() == TerrainType::Water
+					||
+					m_pGraph->GetNodeConnections(node.pNode).size() < 4)
+				{
+					IsPureCell = false;
+				}
+			}
+			if (!IsPureCell)
+			{
+				// make a vector from the node to all its neighbours and get the smallest one 
+				std::vector<Vector2> vectorToNeighbours;
+				for (auto& neighbour : m_pGraph->GetNodeConnections(node.pNode))
+				{
+					// calculate a vector from neighbour to node
+					Vector2 NeighbourToNode =
+						(m_pGraph->GetNodeWorldPos(m_pGraph->GetNode(neighbour->GetTo()))
+							-
+							m_pGraph->GetNodeWorldPos(node.pNode));
+					// add it to the container
+					vectorToNeighbours.push_back(NeighbourToNode);
+				}
+				// grab the smallest distance because not a pure cell
+				auto smallest = *std::min_element(vectorToNeighbours.begin(), vectorToNeighbours.end());
+				fieldVector = smallest.GetNormalized();
+			}
+			else
+			{ // if it is a pure cell
+				// calcualte one big vector and take the average of it 
+				for (auto& neighbour : m_pGraph->GetNodeConnections(node.pNode))
+				{
+					Vector2 NodeToNeighbour =
+						(m_pGraph->GetNodeWorldPos(node.pNode)
+							-
+							m_pGraph->GetNodeWorldPos(m_pGraph->GetNode(neighbour->GetTo())));
+					float distance = static_cast<float>(m_pGraph->GetNode(neighbour->GetTo())->GetDistance());
+
+					// sum up
+					fieldVector += NodeToNeighbour.GetNormalized() * distance;
+				}
+
+				fieldVector /= static_cast<float>(amountOfNeighbours);
+
+			}
+			// set the direction of the node
+			node.pNode->SetDirection(fieldVector);
+		}
+#pragma endregion Vector Kernel Convolution
 
 	}
 
