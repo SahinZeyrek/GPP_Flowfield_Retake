@@ -34,11 +34,16 @@ Anything between 2-254 should be avoided if possible.
 ## 1: Heat map/Cost field
 The heat map or the cost field would be the very first step after you'd have created your grid,
 attributing the distance from the cell towards the goal point.
+
 The algorithm itself is similair to AStar.
-We keep track of our cells by using an open list and closed list. Any visited cell gets put into the closed list.
+
+We keep track of our cells by using an open list and closed list.
+Any visited cell gets put into the closed list.
+
 We would go over each cell in the grid, give it a certain cost depending on the type of terrain
 and start calculating the heatmap starting from our goal point.
 After that, you would add it to the open list and start iterating over the list as long its not empty.
+
 Then we'd take the cell with the least amount of cost as our current node
 and it to our closed list.
 For each neighbour of the current node in the list you would first check if its a special terrain.
