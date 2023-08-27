@@ -91,3 +91,5 @@ This was my second attempt at making a flow field and I'm proud that I've been a
 I've improved quite a bit ever since and I'm looking forward to improving more in the fields I'm interested in.
 It has been quite the experience and challenge.
 
+# SOURCES
+https://www.youtube.com/watch?v=ZJZu3zLMYAc
